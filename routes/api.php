@@ -16,25 +16,14 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-//public route
-Route::group(['middleware'=>[]], function(){
-	Route::post('register', 'User\UserController@store');
-	//Route::post('checkEmail', 'User\UserController@checkEmail');
-	//Route::post('resetPassword', User\UserController@resetPassword);
 
-
+Route::group(['middleware'=>['auth:api']], function(){
+	Route::resource('users', 'User\UserController',['except'=>['edit']]);
+	Route::resource('roles', 'Role\RoleController', ['only'=>['index', 'store', 'destroy']]);
+	Route::resource('roles.permissions', 'Role\RolePermissionController', ['only'=>['index', 'store']]);
+	Route::resource('permissions', 'Permission\PermissionController', ['only'=>['index', 'store', 'destroy']]);
+	Route::resource('users.roles', 'User\UserRoleController', ['only'=>['index', 'store']]);
+	Route::resource('users.permissions', 'User\UserPermissionController', ['only'=>['index', 'store']]);
+	Route::get('users/{user}/standalonepermissions', 'User\UserPermissionController@standAlonePermissions');
 });
-//authenticated route
-Route::group(['middleware'=>[/*'auth:api']*/]], function(){
-	Route::put('updateuser', 'User\UserController@update');
-	Route::get('allusers', 'User\SuperAdminController@allUsers');
-	Route::post('createrole', 'User\SuperAdminController@createRole');
-	Route::post('createpermission', 'User\SuperAdminController@createPermission');
-	Route::get('role/{role}/assignpermission', 'User\SuperAdminController@showPermissionOfRole');
-	Route::post('role/{role}/assignpermission', 'User\SuperAdminController@assignPermissionsToRole');
-	Route::get('user/{user}/rolepermission', 'User\SuperAdminController@showRolePermission');
-	Route::post('user/{user}/rolepermission', 'User\SuperAdminController@assignRolePermission');
-
-});
-
 

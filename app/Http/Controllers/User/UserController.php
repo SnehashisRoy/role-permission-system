@@ -15,7 +15,16 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        $users=User::all();
+        return response()->json(['data'=> $users], 200);
+    }
+    /**
+    *
+    *
+    */
+    public function show(User $user)
+    {
+        return response()->json(['data'=>$user], 200);
     }
 
     /**
@@ -23,9 +32,15 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $this->validate($request, [
+            'name'=>'required',
+            'email'=> 'required|email|unique:users',
+            'password'=>'required|confirmed'
+            ]);
+        $user= User::create($request->all());
+        return response()->json(['data'=>$user], 200);
     }
 
     /**
@@ -46,57 +61,27 @@ class UserController extends Controller
             'email'=>$request->email,
             'password'=>bcrypt($request->password)
             ]);
-        return response()->json($user, 200);
+        return response()->json(['data'=>$user], 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\user  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function show(user $user)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\user  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(user $user)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\user  $user
-     * @return \Illuminate\Http\Response
-     */
+    
     public function update(Request $request, user $user)
     {
-        $user=auth()->user();
+        //$user=auth()->user();
         $this->validate($request, [
             'name'=>'required',
-            'email'=> 'required|email|unique:users,email'.$user->id,
+            'email'=> 'required|email|unique:users,email,'.$user->id,
             'password'=>'required|confirmed'
             ]);
         $user->name= $request->name;
         $user->email=$request->email;
-        $user->password= $request->password;
+        $user->password= bcrypt($request->password);
         if($user->isClean()){
-            return response()->json('You have not changed anything', 422 );
+            return response()->json('You have not changed anything', 422);
         }
         $user->save();
-        return response()->json('Information is updated', 200);
-
-        
-
+        return response()->json(['data'=>$user], 200);
+      
     }
 
     /**
@@ -107,6 +92,7 @@ class UserController extends Controller
      */
     public function destroy(user $user)
     {
-        //
+      $user->delete(); 
+      return response()->json(['data'=>$user], 200); 
     }
 }
